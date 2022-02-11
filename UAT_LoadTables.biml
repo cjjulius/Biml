@@ -1,0 +1,69 @@
+﻿<Biml xmlns="http://schemas.varigence.com/biml.xsd">
+    
+    
+<!-- Get all tables in the Sales schema -->
+    <# var importResult = RootNode.Connections["Prod"].GetDatabaseSchema(new List<string>{"data"}, null, ImportOptions.ExcludePrimaryKey|ImportOptions.ExcludeCheckConstraint|ImportOptions.ExcludeForeignKey|ImportOptions.ExcludeColumnDefault|ImportOptions.ExcludeIdentity|ImportOptions.ExcludeIndex);#>
+
+<Packages>
+    <# foreach (var table in importResult.TableNodes) {  if (table.Name == "tSite"){#>
+<Package Name="Load_<#= table.Name #>_UAT" ConstraintMode="Linear" ProtectionLevel = "EncryptSensitiveWithUserKey">
+
+    <Tasks>
+        <ExecuteSQL Name="SQL Truncate <#= table.Name #>" ConnectionName="UAT">
+            <DirectInput>TRUNCATE TABLE [<#= table.Schema.Name #>].[<#= table.Name #>]</DirectInput>
+        </ExecuteSQL>
+       
+        <Dataflow Name="DFT Load <#= table.Name #>">
+    <Transformations>
+        <OleDbSource Name="OLESRC <#= table.Name #>" ConnectionName="Prod">
+            <DirectInput>SELECT * FROM [<#= table.Schema.Name #>].[<#= table.Name #>]</DirectInput>
+        </OleDbSource>
+        <OleDbDestination Name="OLEDST <#= table.Name #>" ConnectionName="UAT">
+            <ExternalTableOutput Table="[<#= table.Schema.Name #>].[<#= table.Name #>]"></ExternalTableOutput>
+        </OleDbDestination>
+    </Transformations>
+</Dataflow>
+        
+    </Tasks>
+
+</Package>
+
+<Package Name="Load_<#= table.Name #>_Dev" ConstraintMode="Linear" ProtectionLevel = "EncryptSensitiveWithUserKey">
+
+    <Tasks>
+        <ExecuteSQL Name="SQL Truncate <#= table.Name #>" ConnectionName="Dev">
+            <DirectInput>TRUNCATE TABLE [<#= table.Schema.Name #>].[<#= table.Name #>]</DirectInput>
+        </ExecuteSQL>
+       
+        <Dataflow Name="DFT Load <#= table.Name #>">
+    <Transformations>
+        <OleDbSource Name="OLESRC <#= table.Name #>" ConnectionName="Prod">
+            <DirectInput>SELECT * FROM [<#= table.Schema.Name #>].[<#= table.Name #>]</DirectInput>
+        </OleDbSource>
+        <OleDbDestination Name="OLEDST <#= table.Name #>" ConnectionName="Dev">
+            <ExternalTableOutput Table="[<#= table.Schema.Name #>].[<#= table.Name #>]"></ExternalTableOutput>
+        </OleDbDestination>
+    </Transformations>
+</Dataflow>
+        
+    </Tasks>
+
+</Package>
+
+
+<# }} #>
+    
+<!--    Can be activated if needed. Creates a Master Package to run child packages
+
+    <Package Name="Master - Load Staging Tables" ConstraintMode="Linear" ProtectionLevel = "EncryptSensitiveWithUserKey">    
+    <Tasks>
+    <# foreach (var table in importResult.TableNodes) {  if (table.Name == "tSite"){#>  
+        <ExecutePackage Name="ExPkg <#= table.Name #>">
+            <ExternalProjectPackage Package="Load <#= table.Name #>.dtsx" />
+        </ExecutePackage>
+    <# } }#> 
+    </Tasks>
+</Package>
+-->
+    </Packages>
+</Biml>
