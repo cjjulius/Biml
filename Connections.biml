@@ -1,8 +1,10 @@
-﻿<Biml xmlns="http://schemas.varigence.com/biml.xsd">
+<Biml xmlns="http://schemas.varigence.com/biml.xsd">
+    
+    
     <Connections>
-        <Connection Name="Prod" ConnectionString="Data Source=ProdServer;Initial Catalog=ProdDatabase;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;"></Connection>
-        <Connection Name="UAT" ConnectionString="Data Source=UATServer;Initial Catalog=UATDatabase;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;"></Connection>
-        <Connection Name="Dev" ConnectionString="Data Source=DevServer;Initial Catalog=DevDatabase;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;"></Connection>
+        <Connection Name="Prod" ConnectionString="Data Source=SomeProdServer;Initial Catalog=SomeDatabase;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;"></Connection>
+        <Connection Name="UAT" ConnectionString="Data Source=SomeUATServer;Initial Catalog=SomeDatabase;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;"></Connection>
+        <Connection Name="Dev" ConnectionString="Data Source=SomeDevServer;Initial Catalog=SomeDatabase;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;"></Connection>
     </Connections>
 </Biml>
 
