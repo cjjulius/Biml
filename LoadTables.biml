@@ -1,11 +1,11 @@
-﻿<Biml xmlns="http://schemas.varigence.com/biml.xsd">
+<Biml xmlns="http://schemas.varigence.com/biml.xsd">
     
     
 <!-- Get all tables in the Sales schema -->
-    <# var importResult = RootNode.Connections["Prod"].GetDatabaseSchema(new List<string>{"data"}, null, ImportOptions.ExcludePrimaryKey|ImportOptions.ExcludeCheckConstraint|ImportOptions.ExcludeForeignKey|ImportOptions.ExcludeColumnDefault|ImportOptions.ExcludeIdentity|ImportOptions.ExcludeIndex);#>
+    <# var importResult = RootNode.Connections["Prod"].GetDatabaseSchema(new List<string>{"data"}, null, ImportOptions.ExcludePrimaryKey|ImportOptions.ExcludeViews|ImportOptions.ExcludeCheckConstraint|ImportOptions.ExcludeForeignKey|ImportOptions.ExcludeColumnDefault|ImportOptions.ExcludeIdentity|ImportOptions.ExcludeIndex);#>
 
 <Packages>
-    <# foreach (var table in importResult.TableNodes) {  if (table.Name == "tSite"){#>
+    <# foreach (var table in importResult.TableNodes) {  #>
 <Package Name="Load_<#= table.Name #>_UAT" ConstraintMode="Linear" ProtectionLevel = "EncryptSensitiveWithUserKey">
 
     <Tasks>
@@ -51,19 +51,26 @@
 </Package>
 
 
-<# }} #>
+<# } #>
     
 <!--    Can be activated if needed. Creates a Master Package to run child packages
-
+    -->
     <Package Name="Master - Load Staging Tables" ConstraintMode="Linear" ProtectionLevel = "EncryptSensitiveWithUserKey">    
     <Tasks>
-    <# foreach (var table in importResult.TableNodes) {  if (table.Name == "tSite"){#>  
-        <ExecutePackage Name="ExPkg <#= table.Name #>">
-            <ExternalProjectPackage Package="Load <#= table.Name #>.dtsx" />
+    <# foreach (var table in importResult.TableNodes) { #>  
+        <ExecutePackage Name="ExPkg Load_<#= table.Name #>_UAT">
+            <ExternalProjectPackage Package="Load_<#= table.Name #>_UAT.dtsx" />
         </ExecutePackage>
-    <# } }#> 
+    <# } #> 
+    
+        <# foreach (var table in importResult.TableNodes) {  #>  
+        <ExecutePackage Name="ExPkg Load_<#= table.Name #>_Dev">
+            <ExternalProjectPackage Package="Load_<#= table.Name #>_Dev.dtsx" />
+        </ExecutePackage>
+    <# } #> 
+    
     </Tasks>
 </Package>
--->
+
     </Packages>
 </Biml>
