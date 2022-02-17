@@ -1,14 +1,13 @@
-﻿<Biml xmlns="http://schemas.varigence.com/biml.xsd">
+<Biml xmlns="http://schemas.varigence.com/biml.xsd">
 
 
 <!-- Get all tables in the Sales schema -->
-    <# var importResult = RootNode.Connections["Prod"].GetDatabaseSchema(new List<string>{"data"}, null, ImportOptions.ExcludePrimaryKey|ImportOptions.ExcludeCheckConstraint|ImportOptions.ExcludeForeignKey|ImportOptions.ExcludeColumnDefault|ImportOptions.ExcludeIdentity|ImportOptions.ExcludeIndex);#>
+    <# var importResult = RootNode.Connections["Prod"].GetDatabaseSchema(new List<string>{"data"}, null, ImportOptions.ExcludePrimaryKey|ImportOptions.ExcludeViews|ImportOptions.ExcludeCheckConstraint|ImportOptions.ExcludeForeignKey|ImportOptions.ExcludeColumnDefault|ImportOptions.ExcludeIdentity|ImportOptions.ExcludeIndex);#>
 
 <Packages>
     <# 
         // Loop through the tables in the previous list
-		// Skip all tables but tSite for testing purposes
-        foreach (var table in importResult.TableNodes) { if (table.Name == "tSite"){
+        foreach (var table in importResult.TableNodes) {
     #>
     
     <Package Name="Create_<#= table.Name #>_UAT" ProtectionLevel = "EncryptSensitiveWithUserKey"> 
@@ -29,24 +28,35 @@
     
     
     
-    <# }} /* End of table-specific packages */ #>
+    <# } /* End of table-specific packages */ #>
         
     
 <!-- Creates Master Pacakge to run child packages. Can be activated if needed. 
+    Create controller package 
+    -->
 
-<Package Name="Create Tables - Master" ConstraintMode="Linear" ProtectionLevel = "EncryptSensitiveWithUserKey">    
+<Package Name="Master - Create Tables" ConstraintMode="Linear" ProtectionLevel = "EncryptSensitiveWithUserKey">    
     <Tasks>
     <# 
         /* Loop through the tables, create one ExPkg task per table */
         foreach (var table in importResult.TableNodes) { 
     #>  
-        <ExecutePackage Name="ExPkg <#= table.Name #>">
-            <ExternalProjectPackage Package="Create <#= table.Name #>.dtsx" />
+        <ExecutePackage Name="ExPkg <#= table.Name #>_UAT">
+            <ExternalProjectPackage Package="Create_<#= table.Name #>_UAT.dtsx" />
+        </ExecutePackage>
+    <# } #> 
+
+    <# 
+        /* Loop through the tables, create one ExPkg task per table */
+        foreach (var table in importResult.TableNodes) { 
+    #>  
+        <ExecutePackage Name="ExPkg <#= table.Name #>_Dev">
+            <ExternalProjectPackage Package="Create_<#= table.Name #>_Dev.dtsx" />
         </ExecutePackage>
     <# } #> 
     </Tasks>
         </Package>
-    Create controller package -->
+
         
     </Packages>
 </Biml>
